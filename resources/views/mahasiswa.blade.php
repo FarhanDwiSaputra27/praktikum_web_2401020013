@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -32,29 +31,28 @@
 
         <p>
             NIM<br>
-            <input type="text" name="nim" value="{{ old('nim') }}">
+            <input type="text" name="nim" value="{{ old('nim') }}" required>
         </p>
 
         <p>
             Nama<br>
-            <input type="text" name="nama" value="{{ old('nama') }}">
+            <input type="text" name="nama" value="{{ old('nama') }}" required>
         </p>
 
         <p>
             Email<br>
-            <input type="email" name="email" value="{{ old('email') }}">
+            <input type="email" name="email" value="{{ old('email') }}" required>
         </p>
 
         <p>
             Usia<br>
-            <input type="number" name="usia" value="{{ old('usia') }}">
+            <input type="number" name="usia" value="{{ old('usia') }}" required>
         </p>
 
         <p>
             Program Studi<br>
-            <select name="program_studi_id">
+            <select name="program_studi_id" required>
                 <option value="">-- Pilih Program Studi --</option>
-
                 @foreach ($daftarProgramStudi as $programStudi)
                     <option
                         value="{{ $programStudi['id'] }}"
@@ -69,11 +67,41 @@
         <button type="submit">Tambah Data</button>
     </form>
 
-    @if ($nim)
-        <p>Filter NIM: {{ $nim }}</p>
-    @else
-        <p>Menampilkan semua data.</p>
-    @endif
+    <hr>
+
+    <h2>Pencarian dan Filter Mahasiswa</h2>
+
+    <form action="{{ route('mahasiswa.index') }}" method="GET">
+        <p>
+            Cari NIM, Nama, atau Email<br>
+            <input
+                type="text"
+                name="q"
+                value="{{ $q }}"
+                placeholder="Masukkan kata kunci"
+            >
+        </p>
+
+        <p>
+            Program Studi<br>
+            <select name="program_studi_id">
+                <option value="">-- Semua Program Studi --</option>
+                @foreach ($daftarProgramStudi as $programStudi)
+                    <option
+                        value="{{ $programStudi['id'] }}"
+                        @selected((string) $programStudiId === (string) $programStudi['id'])
+                    >
+                        {{ $programStudi['nama_prodi'] }}
+                    </option>
+                @endforeach
+            </select>
+        </p>
+
+        <button type="submit">Cari/Filter</button>
+        <a href="{{ route('mahasiswa.index') }}">Reset</a>
+    </form>
+
+    <hr>
 
     <h2>Daftar Mahasiswa</h2>
 
@@ -85,6 +113,7 @@
                 <th>Email</th>
                 <th>Usia</th>
                 <th>Program Studi</th>
+                <th>Aksi</th>
             </tr>
         </thead>
         <tbody>
@@ -95,17 +124,28 @@
                     <td>{{ $mahasiswa['email'] }}</td>
                     <td>{{ $mahasiswa['usia'] }}</td>
                     <td>{{ $mahasiswa['nama_prodi'] }}</td>
+                    <td>
+                        <a href="{{ route('mahasiswa.edit', $mahasiswa['id']) }}">
+                            Edit
+                        </a>
+
+                        <form
+                            action="{{ route('mahasiswa.destroy', $mahasiswa['id']) }}"
+                            method="POST"
+                            onsubmit="return confirm('Yakin ingin menghapus data mahasiswa ini?')"
+                        >
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit">Hapus</button>
+                        </form>
+                    </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5">Data tidak ditemukan.</td>
+                    <td colspan="6">Data mahasiswa tidak ditemukan.</td>
                 </tr>
             @endforelse
         </tbody>
     </table>
-
-    @if ($nim)
-        <p><a href="{{ url('/mahasiswa') }}">Tampilkan semua data</a></p>
-    @endif
 </body>
 </html>
