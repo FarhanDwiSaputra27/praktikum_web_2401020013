@@ -4,6 +4,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\BukuController;
+
+// Route Buku
+Route::get('/buku', [BukuController::class, 'index']);
+Route::get('/buku/{kode}', [BukuController::class, 'show']);
 
 Route::get('/', function () {
     return view('welcome');
