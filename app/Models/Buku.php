@@ -3,28 +3,18 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Buku extends Model
 {
-    public static function contoh(): array
+    protected $fillable = [
+        'kode',
+        'judul',
+        'kategori_id'
+    ];
+
+    public function kategori(): BelongsTo
     {
-        return [
-            [
-                'kode' => 'BK001',
-                'judul' => 'Teknologi Informasi dalam Dunia Maritim'
-            ],
-            [
-                'kode' => 'BK002',
-                'judul' => 'Sistem Informasi Geografis Kelautan'
-            ],
-            [
-                'kode' => 'BK003',
-                'judul' => 'Dasar-Dasar Oseanografi'
-            ],
-            [
-                'kode' => 'BK004',
-                'judul' => 'Internet of Things untuk Pemantauan Laut'
-            ],
-        ];
+        return $this->belongsTo(Kategori::class);
     }
 }

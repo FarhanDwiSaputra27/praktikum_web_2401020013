@@ -7,8 +7,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\BukuController;
 
 // Route Buku
-Route::get('/buku', [BukuController::class, 'index']);
-Route::get('/buku/{kode}', [BukuController::class, 'show']);
+Route::resource('buku', BukuController::class)->except('show');
 
 Route::get('/', function () {
     return view('welcome');

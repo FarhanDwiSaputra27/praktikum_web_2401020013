@@ -3,39 +3,74 @@
 namespace App\Http\Controllers;
 
 use App\Models\Buku;
+use App\Models\Kategori;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
+use Illuminate\Validation\Rule;
 
 class BukuController extends Controller
 {
-    public function index(Request $request): View
+    public function index(): View
     {
-        $cari = trim((string) $request->query('cari', ''));
-
-        $buku = array_values(array_filter(
-            Buku::contoh(),
-            function ($item) use ($cari) {
-                return $cari === '' ||
-                    stripos($item['judul'], $cari) !== false;
-            }
-        ));
-
         return view('buku.index', [
-            'buku' => $buku,
-            'cari' => $cari,
+            'bukus' => Buku::with('kategori')->orderBy('id')->get()
         ]);
     }
 
-    public function show(string $kode): View
+    public function create(): View
     {
-        foreach (Buku::contoh() as $item) {
-            if ($item['kode'] === $kode) {
-                return view('buku.show', [
-                    'buku' => $item,
-                ]);
-            }
-        }
+        return view('buku.form', [
+            'buku' => new Buku(),
+            'kategoris' => Kategori::orderBy('nama')->get()
+        ]);
+    }
 
-        abort(404);
+    public function store(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'kode' => ['required', 'max:10', 'unique:bukus,kode'],
+            'judul' => ['required', 'max:255'],
+            'kategori_id' => ['required', 'exists:kategoris,id'],
+        ]);
+
+        Buku::create($data);
+
+        return redirect()->route('buku.index')
+            ->with('status', 'Buku berhasil ditambahkan.');
+    }
+
+    public function edit(Buku $buku): View
+    {
+        return view('buku.form', [
+            'buku' => $buku,
+            'kategoris' => Kategori::orderBy('nama')->get()
+        ]);
+    }
+
+    public function update(Request $request, Buku $buku): RedirectResponse
+    {
+        $data = $request->validate([
+            'kode' => [
+                'required',
+                'max:10',
+                Rule::unique('bukus', 'kode')->ignore($buku->id)
+            ],
+            'judul' => ['required', 'max:255'],
+            'kategori_id' => ['required', 'exists:kategoris,id'],
+        ]);
+
+        $buku->update($data);
+
+        return redirect()->route('buku.index')
+            ->with('status', 'Buku berhasil diperbarui.');
+    }
+
+    public function destroy(Buku $buku): RedirectResponse
+    {
+        $buku->delete();
+
+        return redirect()->route('buku.index')
+            ->with('status', 'Buku berhasil dihapus.');
     }
 }
