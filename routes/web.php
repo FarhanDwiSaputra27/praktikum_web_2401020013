@@ -5,14 +5,24 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\BukuController;
+use App\Http\Controllers\Auth\LoginController;
 
-// Route Buku
-Route::resource('buku', BukuController::class)->except('show');
+// Route Login
+Route::get('/login', [LoginController::class, 'show'])->name('login');
+Route::post('/login', [LoginController::class, 'login'])->name('login.proses');
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
+// Route Buku dengan Middleware Auth
+Route::middleware('auth')->group(function () {
+    Route::resource('buku', BukuController::class)->except('show');
+});
+
+// Route Halaman Utama
 Route::get('/', function () {
     return view('welcome');
 });
 
+// Route Latihan PHP
 Route::get('/latihan-php', function () {
     $nama = 'Farhan Dwi Saputra';
     $nilai = [90, 95, 99, 98, 96];
@@ -43,6 +53,7 @@ Route::get('/latihan-php', function () {
     ));
 });
 
+// Route Form Mahasiswa
 Route::get('/form-mahasiswa', function () {
     return view('form-mahasiswa');
 });
@@ -89,6 +100,7 @@ Route::post('/form-mahasiswa', function (Request $request) {
     return view('hasil-form', ['data' => $data]);
 });
 
+// Route Menampilkan dan Mencari Data Mahasiswa
 Route::get('/mahasiswa', function (Request $request) {
     try {
         $pdo = DB::connection()->getPdo();
@@ -157,6 +169,7 @@ Route::get('/mahasiswa', function (Request $request) {
     }
 })->name('mahasiswa.index');
 
+// Route Form Edit Mahasiswa
 Route::get('/mahasiswa/{id}/edit', function (int $id) {
     try {
         $pdo = DB::connection()->getPdo();
@@ -194,7 +207,7 @@ Route::get('/mahasiswa/{id}/edit', function (int $id) {
     }
 })->name('mahasiswa.edit');
 
-
+// Route Memperbarui Data Mahasiswa
 Route::put('/mahasiswa/{id}', function (Request $request, int $id) {
     $data = $request->validate([
         'nim' => ['required', 'string', 'max:10'],
@@ -263,6 +276,7 @@ Route::put('/mahasiswa/{id}', function (Request $request, int $id) {
     }
 })->name('mahasiswa.update');
 
+// Route Menghapus Data Mahasiswa
 Route::delete('/mahasiswa/{id}', function (int $id) {
     try {
         $pdo = DB::connection()->getPdo();
@@ -270,6 +284,7 @@ Route::delete('/mahasiswa/{id}', function (int $id) {
         $cek = $pdo->prepare(
             'SELECT id FROM mahasiswa WHERE id = :id'
         );
+
         $cek->execute(['id' => $id]);
 
         if (!$cek->fetch(\PDO::FETCH_ASSOC)) {
@@ -282,6 +297,7 @@ Route::delete('/mahasiswa/{id}', function (int $id) {
         $hapus = $pdo->prepare(
             'DELETE FROM mahasiswa WHERE id = :id'
         );
+
         $hapus->execute(['id' => $id]);
 
         return redirect('/mahasiswa')->with(
@@ -298,7 +314,7 @@ Route::delete('/mahasiswa/{id}', function (int $id) {
     }
 })->name('mahasiswa.destroy');
 
-
+// Route Menambahkan Data Mahasiswa
 Route::post('/mahasiswa', function (Request $request) {
     $data = $request->validate([
         'nim' => ['required', 'string', 'max:20'],
