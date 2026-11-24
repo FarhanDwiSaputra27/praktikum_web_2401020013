@@ -14,7 +14,15 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // Route Buku dengan Middleware Auth
 Route::middleware('auth')->group(function () {
-    Route::resource('buku', BukuController::class)->except('show');
+   Route::middleware('auth')->group(function () {
+    Route::get('/buku', [BukuController::class, 'index'])
+        ->name('buku.index');
+
+    Route::middleware('can:kelola-buku')->group(function () {
+        Route::resource('buku', BukuController::class)
+            ->except(['index', 'show']);
+    });
+});
 });
 
 // Route Halaman Utama
